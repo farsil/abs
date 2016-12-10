@@ -1,0 +1,114 @@
+# $Id: PKGBUILD 177964 2016-06-05 11:30:41Z bluewind $
+# Maintainer: Sébastien Luttringer
+# Contributor: Angel Velasquez <angvp@archlinux.org>
+# Contributor: tobias <tobias@archlinux.org>
+# Contributor: dibblethewrecker dibblethewrecker.at.jiwe.dot.org
+# Packager: Marco Buzzanca <marco.bzn@gmail.com>
+
+pkgbase=rxvt-unicode
+pkgname=('rxvt-unicode' 'rxvt-unicode-terminfo')
+pkgver=9.22
+pkgrel=2
+arch=('i686' 'x86_64')
+url='http://software.schmorp.de/pkg/rxvt-unicode.html'
+group=('silver')
+license=('GPL')
+
+source=(
+  "http://dist.schmorp.de/rxvt-unicode/$pkgname-$pkgver.tar.bz2"
+  'urxvt.desktop'
+  'urxvtc.desktop'
+  'font-rendering.patch'
+  'clear.patch'
+  'secondary-wheel.patch'
+  'intensity.patch'
+)
+
+sha256sums=('e94628e9bcfa0adb1115d83649f898d6edb4baced44f5d5b769c2eeb8b95addd'
+            '5f9c435d559371216d1c5b49c6ec44bfdb786b12d925d543c286b0764dea0319'
+            '91536bb27c6504d6cb0d33775a0c4709a4b439670b900f0c278c25037f19ad66'
+            '51c72287d26080c752e073bbb3f47a0745a3510fd3baa6ff153dc91975159762'
+            '01aecc88b359e7a0bc86de728e5032c26511f086d579e783863d9015c6967411'
+            'b013bd958cade385835b380843cdbad28e90c4fe4b4315e448facab577b4d2de'
+            'a04f27365fc680a3ca9b3db70f0cc09610685db3cff76a561dd745ecc74c2156')
+
+prepare() {
+  cd $pkgname-$pkgver
+
+  # Improves font rendering
+  patch -p0 -i "$srcdir/font-rendering.patch"
+
+  # Improves handling of screen clear command
+  patch -p0 -i "$srcdir/clear.patch"
+
+  # Adds option for scrolling in secondary screen via arrow keys
+  patch -p0 -i "$srcdir/secondary-wheel.patch"
+
+  # Do not use intense colors with 256 color escape sequences 
+  patch -p0 -i "$srcdir/intensity.patch"
+}
+
+build() {
+  cd "$pkgname-$pkgver"
+
+  ./configure \
+    --prefix=/usr \
+    --enable-256-color \
+    --disable-combining \
+    --disable-fading \
+    --disable-font-styles \
+    --disable-iso14755 \
+    --disable-keepscrolling \
+    --disable-lastlog \
+    --enable-mousewheel \
+    --disable-next-scroll \
+    --disable-perl \
+    --disable-pointer-blank \
+    --disable-rxvt-scroll \
+    --enable-selectionscrolling \
+    --enable-slipwheeling \
+    --disable-smart-resize \
+    --enable-startup-notification \
+    --disable-transparency \
+    --disable-unicode3 \
+    --disable-utmp \
+    --disable-wtmp \
+    --enable-xft \
+    --enable-xim \
+    --disable-xterm-scroll \
+    --disable-pixbuf \
+    --disable-frills
+  make
+}
+
+package_rxvt-unicode() {
+  pkgdesc='A unicode enabled rxvt-clone terminal emulator (urxvt)'
+  depends=('rxvt-unicode-terminfo' 'libxft' 'startup-notification')
+
+  cd "$pkgname-$pkgver"
+
+  # install freedesktop menu
+  install -Dm644 -t "$pkgdir/usr/share/applications" "$srcdir/urxvt.desktop"
+  install -Dm644 -t "$pkgdir/usr/share/applications" "$srcdir/urxvtc.desktop"
+
+  # tells tic to compile in $srcdir/terminfo
+  export TERMINFO="$srcdir/terminfo"
+  mkdir -p "$TERMINFO"
+
+  # install package
+  make DESTDIR="$pkgdir" install
+}
+
+package_rxvt-unicode-terminfo() {
+  pkgdesc='Terminfo files for urxvt'
+  conflict=('rxvt-unicode<=9.18-6')
+
+  # this should be made by rxvt-unicode's make
+  cd "$srcdir/terminfo/r"
+
+  # install terminfo files
+  install -Dm644 -t "$pkgdir/usr/share/terminfo/r" rxvt-unicode
+  install -Dm644 -t "$pkgdir/usr/share/terminfo/r" rxvt-unicode-256color
+}
+
+# vim:set ts=2 sw=2 et:
