@@ -84,6 +84,7 @@ build() {
 package_rxvt-unicode() {
   pkgdesc='A unicode enabled rxvt-clone terminal emulator (urxvt)'
   depends=('rxvt-unicode-terminfo' 'libxft' 'startup-notification')
+  makedepends=('perl')
 
   cd "$pkgname-$pkgver"
 
