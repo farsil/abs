@@ -27,7 +27,7 @@ sha256sums=('e94628e9bcfa0adb1115d83649f898d6edb4baced44f5d5b769c2eeb8b95addd'
             '91536bb27c6504d6cb0d33775a0c4709a4b439670b900f0c278c25037f19ad66'
             '51c72287d26080c752e073bbb3f47a0745a3510fd3baa6ff153dc91975159762'
             '01aecc88b359e7a0bc86de728e5032c26511f086d579e783863d9015c6967411'
-            'b013bd958cade385835b380843cdbad28e90c4fe4b4315e448facab577b4d2de')
+            '0d28c357e76ddc0542bf08626add07400ce5bf9e296cf9dd634216c36ab98457')
 
 prepare() {
   cd $pkgname-$pkgver
@@ -72,6 +72,7 @@ build() {
     --disable-xterm-scroll \
     --disable-pixbuf \
     --disable-frills
+
   make
 }
 
