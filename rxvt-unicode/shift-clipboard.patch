@@ -1,0 +1,87 @@
+--- doc/rxvt.1.man.in
++++ doc/rxvt.1.man.in
+@@ -497,6 +497,10 @@ info.
+ Override detection of Meta modifier with specified key: \fBalt\fR,
+ \&\fBmeta\fR, \fBhyper\fR, \fBsuper\fR, \fBmod1\fR, \fBmod2\fR, \fBmod3\fR, \fBmod4\fR,
+ \&\fBmod5\fR; resource \fImodifier\fR.
++.IP "\fB\-sclip\fR|\fB+sclip\fR" 4
++.IX Item "-sclip|+sclip"
++Use Shift+Ctrl instead of Meta+Ctrl to access CLIPBOARD (default disabled);
++resource \fBshiftClipboard\fR.
+ .IP "\fB\-ssc\fR|\fB+ssc\fR" 4
+ .IX Item "-ssc|+ssc"
+ Turn on/off secondary screen (default enabled); resource
+@@ -1042,6 +1046,9 @@ locale, findfont, icon label and window title requests.
+ Set the key to be interpreted as the Meta key to: \fBalt\fR, \fBmeta\fR,
+ \&\fBhyper\fR, \fBsuper\fR, \fBmod1\fR, \fBmod2\fR, \fBmod3\fR, \fBmod4\fR, \fBmod5\fR; option
+ \&\fB\-mod\fR.
++.IP "\fBshiftClipboard:\fR \fIboolean\fR" 4
++.IX Item "shiftClipboard: boolean"
++Use Shift+Ctrl instead of Meta+Ctrl to access CLIPBOARD (default disabled).
+ .IP "\fBanswerbackString:\fR \fIstring\fR" 4
+ .IX Item "answerbackString: string"
+ Specify the reply rxvt-unicode sends to the shell when an \s-1ENQ \s0(control-E)
+--- src/command.C
++++ src/command.C
+@@ -407,7 +407,7 @@ rxvt_wcsdup (const wchar_t *str, int len)
+ void ecb_cold
+ rxvt_term::key_press (XKeyEvent &ev)
+ {
+-  int ctrl, meta, shft, len;
++  int ctrl, meta, shft, len, clipmod;
+   KeySym keysym = NoSymbol;
+   char rkbuf[KBUFSZ + 1];
+   char *kbuf = rkbuf + 1;
+@@ -427,6 +427,11 @@ rxvt_term::key_press (XKeyEvent &ev)
+   ctrl = ev.state & ControlMask;
+   meta = ev.state & ModMetaMask;
+ 
++  if (option (Opt_shiftClipboard))
++    clipmod = shft;
++  else
++    clipmod = meta;
++
+   kbuf[0] = 0;
+ 
+ #if USE_XIM
+@@ -788,9 +793,9 @@ rxvt_term::key_press (XKeyEvent &ev)
+             }
+         }
+ 
+-      if (ctrl && meta && (keysym == XK_c || keysym == XK_v))
++      if (ctrl && clipmod && (keysym == XK_c || keysym == XK_C || keysym == XK_v || keysym == XK_V))
+         {
+-          if (keysym == XK_v)
++          if (keysym == XK_v || keysym == XK_V)
+             selection_request (ev.time, Sel_Clipboard);
+           else if (selection.len > 0)
+             {
++++ src/optinc.h
+@@ -14,6 +14,7 @@
+  def(scrollTtyOutput)
+  def(scrollTtyKeypress)
+  def(transparent)
++ def(shiftClipboard)
+  def(tripleclickwords)
+  def(scrollWithBuffer)
+  def(jumpScroll)
+--- src/rsinc.h
++++ src/rsinc.h
+@@ -93,6 +93,7 @@
+ #endif
+   def (cutchars)
+   def (modifier)
++  def (shiftClipboard)
+   def (answerbackstring)
+   def (tripleclickwords)
+   def (insecure)
+--- src/xdefaults.C
++++ src/xdefaults.C
+@@ -262,6 +262,7 @@ optList[] = {
+               RSTRG (Rs_print_pipe, "print-pipe", "string"),
+ #endif
+               STRG (Rs_modifier, "modifier", "mod", "modifier", "meta modifier = alt|meta|hyper|super|mod1|...|mod5"),
++              BOOL (Rs_shiftClipboard, "shiftClipboard", "sclip", Opt_shiftClipboard, 0, "shift instead of meta to access CLIPBOARD"),
+               RSTRG (Rs_cutchars, "cutchars", "string"),
+               RSTRG (Rs_answerbackstring, "answerbackString", "string"),
+ #ifndef NO_SECONDARY_SCREEN
