@@ -4,23 +4,39 @@
  Override detection of Meta modifier with specified key: \fBalt\fR,
  \&\fBmeta\fR, \fBhyper\fR, \fBsuper\fR, \fBmod1\fR, \fBmod2\fR, \fBmod3\fR, \fBmod4\fR,
  \&\fBmod5\fR; resource \fImodifier\fR.
-+.IP "\fB\-sclip\fR|\fB+sclip\fR" 4
-+.IX Item "-sclip|+sclip"
-+Use Shift+Ctrl instead of Meta+Ctrl to access CLIPBOARD (default disabled);
-+resource \fBshiftClipboard\fR.
++.IP "\fB\-eclip\fR|\fB+eclip\fR" 4
++.IX Item "-eclip|+eclip"
++Use Shift+Ctrl instead of Meta+Ctrl to access CLIPBOARD (default enabled);
++resource \fBeasyClipboard\fR.
  .IP "\fB\-ssc\fR|\fB+ssc\fR" 4
  .IX Item "-ssc|+ssc"
  Turn on/off secondary screen (default enabled); resource
-@@ -1042,6 +1046,9 @@ locale, findfont, icon label and window title requests.
+@@ -1042,6 +1046,11 @@ locale, findfont, icon label and window title requests.
  Set the key to be interpreted as the Meta key to: \fBalt\fR, \fBmeta\fR,
  \&\fBhyper\fR, \fBsuper\fR, \fBmod1\fR, \fBmod2\fR, \fBmod3\fR, \fBmod4\fR, \fBmod5\fR; option
  \&\fB\-mod\fR.
-+.IP "\fBshiftClipboard:\fR \fIboolean\fR" 4
-+.IX Item "shiftClipboard: boolean"
-+Use Shift+Ctrl instead of Meta+Ctrl to access CLIPBOARD (default disabled).
++.IP "\fBeasyClipboard:\fR \fIboolean\fR" 4
++.IX Item "easyClipboard: boolean"
++Use Shift+Ctrl instead of Meta+Ctrl to access CLIPBOARD (default enabled).
++Note that this option does not affect the insertion of the CLIPBOARD selection
++activated by pressing \fBmeta\fR and the Middle mouse button.
  .IP "\fBanswerbackString:\fR \fIstring\fR" 4
  .IX Item "answerbackString: string"
  Specify the reply rxvt-unicode sends to the shell when an \s-1ENQ \s0(control-E)
+@@ -1496,9 +1505,10 @@ Pressing \fBShift-Insert\fR causes the value of the \s-1PRIMARY\s0 selection to
+ inserted too.
+ .Sp
+ rxvt-unicode also provides the bindings \fBCtrl-Meta-c\fR and
+-<Ctrl\-Meta\-v> to interact with the \s-1CLIPBOARD\s0 selection. The first
+-binding causes the value of the internal selection to be copied to the
+-\&\s-1CLIPBOARD\s0 selection, while the second binding causes the value of the
++\fBCtrl-Meta-v\fR to interact with the \s-1CLIPBOARD\s0 selection, unless
++modified by \fBeasyClipboard\fR. The first binding causes the value of the
++internal selection to be copied to the \&\s-1CLIPBOARD\s0 selection, while the
++second binding causes the value of the
+ \&\s-1CLIPBOARD\s0 selection to be inserted.
+ .SH "CHANGING FONTS"
+ .IX Header "CHANGING FONTS"
 --- src/command.C
 +++ src/command.C
 @@ -407,7 +407,7 @@ rxvt_wcsdup (const wchar_t *str, int len)
@@ -32,19 +48,15 @@
    KeySym keysym = NoSymbol;
    char rkbuf[KBUFSZ + 1];
    char *kbuf = rkbuf + 1;
-@@ -427,6 +427,11 @@ rxvt_term::key_press (XKeyEvent &ev)
+@@ -426,6 +426,7 @@ rxvt_term::key_press (XKeyEvent &ev)
+   shft = ev.state & ShiftMask;
    ctrl = ev.state & ControlMask;
    meta = ev.state & ModMetaMask;
++  clipmod = option(Opt_easyClipboard) ? shft : meta;
  
-+  if (option (Opt_shiftClipboard))
-+    clipmod = shft;
-+  else
-+    clipmod = meta;
-+
    kbuf[0] = 0;
  
- #if USE_XIM
-@@ -788,9 +793,9 @@ rxvt_term::key_press (XKeyEvent &ev)
+@@ -788,9 +789,9 @@ rxvt_term::key_press (XKeyEvent &ev)
              }
          }
  
@@ -56,32 +68,39 @@
              selection_request (ev.time, Sel_Clipboard);
            else if (selection.len > 0)
              {
++++ src/init.C
+@@ -557,6 +557,7 @@ rxvt_term::init_vars ()
+ 
+   set_option (Opt_scrollBar);
+   set_option (Opt_scrollTtyOutput);
++  set_option (Opt_easyClipboard);
+   set_option (Opt_jumpScroll);
+   set_option (Opt_skipScroll);
+   set_option (Opt_secondaryScreen);
 +++ src/optinc.h
 @@ -14,6 +14,7 @@
   def(scrollTtyOutput)
   def(scrollTtyKeypress)
   def(transparent)
-+ def(shiftClipboard)
++ def(easyClipboard)
   def(tripleclickwords)
   def(scrollWithBuffer)
   def(jumpScroll)
---- src/rsinc.h
 +++ src/rsinc.h
 @@ -93,6 +93,7 @@
  #endif
    def (cutchars)
    def (modifier)
-+  def (shiftClipboard)
++  def (easyClipboard)
    def (answerbackstring)
    def (tripleclickwords)
    def (insecure)
---- src/xdefaults.C
 +++ src/xdefaults.C
 @@ -262,6 +262,7 @@ optList[] = {
                RSTRG (Rs_print_pipe, "print-pipe", "string"),
  #endif
                STRG (Rs_modifier, "modifier", "mod", "modifier", "meta modifier = alt|meta|hyper|super|mod1|...|mod5"),
-+              BOOL (Rs_shiftClipboard, "shiftClipboard", "sclip", Opt_shiftClipboard, 0, "shift instead of meta to access CLIPBOARD"),
++              BOOL (Rs_easyClipboard, "easyClipboard", "eclip", Opt_easyClipboard, 0, "shift instead of meta to access CLIPBOARD"),
                RSTRG (Rs_cutchars, "cutchars", "string"),
                RSTRG (Rs_answerbackstring, "answerbackString", "string"),
  #ifndef NO_SECONDARY_SCREEN
