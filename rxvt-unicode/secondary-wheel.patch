@@ -11,7 +11,7 @@
  .IP "\fB\-hold\fR|\fB+hold\fR" 4
  .IX Item "-hold|+hold"
  Turn on/off hold window after exit support. If enabled, @@RXVT_NAME@@
-@@ -1056,10 +1060,18 @@ Turn on/off secondary screen scroll (default enabled). If this
+@@ -1056,10 +1060,17 @@ Turn on/off secondary screen scroll (default enabled). If this
  Turn on/off secondary screen (default enabled).
  .IP "\fBsecondaryScroll:\fR \fIboolean\fR" 4
  .IX Item "secondaryScroll: boolean"
@@ -19,9 +19,7 @@
 +Turn on/off secondary screen scroll (default disabled). If this
  option is enabled, scrolls on the secondary screen will change the
  scrollback buffer and, when secondaryScreen is off, switching
--to/from the secondary screen will instead scroll the screen up.
-+to/from the secondary screen will instead scroll the screen up. This setting
-+has no effect if \fBsecondaryWheel\fR is enabled.
+ to/from the secondary screen will instead scroll the screen up.
 +.IP "\fBsecondaryWheel:\fR \fIboolean\fR" 4
 +.IX Item "secondaryWheel: boolean"
 +Turn on/off secondary wheel (default enabled). If enabled, when on
