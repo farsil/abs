@@ -1,0 +1,144 @@
+--- src/command.C
++++ src/command.C
+@@ -3893,6 +3893,7 @@ rxvt_term::process_sgr_mode (unsigned int nargs, const int *arg)
+         {
+           case 0:
+             rendset = 0, rendstyle = ~RS_None;
++            scr_hicolor_mode (0, RS_hicolorFg | RS_hicolorBg);
+             break;
+           case 1:
+             rendset = 1, rendstyle = RS_Bold;
+@@ -3964,16 +3965,19 @@ rxvt_term::process_sgr_mode (unsigned int nargs, const int *arg)
+           case 36:
+           case 37:
+             scr_color ((unsigned int) (minCOLOR + (arg[i] - 30)), Color_fg);
++            scr_hicolor_mode (0, RS_hicolorFg);
+             break;
+           case 38: // set fg color, ISO 8613-6
+             if (nargs > i + 2 && arg[i + 1] == 5)
+               {
+                 scr_color ((unsigned int) (minCOLOR + arg[i + 2]), Color_fg);
++                scr_hicolor_mode (1, RS_hicolorFg);
+                 i += 2;
+               }
+             break;
+           case 39:		/* default fg */
+             scr_color (Color_fg, Color_fg);
++            scr_hicolor_mode (0, RS_hicolorFg);
+             break;
+ 
+           case 40:
+@@ -3985,16 +3989,19 @@ rxvt_term::process_sgr_mode (unsigned int nargs, const int *arg)
+           case 46:
+           case 47:
+             scr_color ((unsigned int) (minCOLOR + (arg[i] - 40)), Color_bg);
++            scr_hicolor_mode (0, RS_hicolorBg);
+             break;
+           case 48: // set bg color, ISO 8613-6
+             if (nargs > i + 2 && arg[i + 1] == 5)
+               {
+                 scr_color ((unsigned int) (minCOLOR + arg[i + 2]), Color_bg);
++                scr_hicolor_mode (1, RS_hicolorBg);
+                 i += 2;
+               }
+             break;
+           case 49:		/* default bg */
+             scr_color (Color_bg, Color_bg);
++            scr_hicolor_mode (0, RS_hicolorBg);
+             break;
+ 
+           //case 50: // not variable spacing
+@@ -4009,6 +4016,7 @@ rxvt_term::process_sgr_mode (unsigned int nargs, const int *arg)
+           case 96:
+           case 97:
+             scr_color ((unsigned int) (minBrightCOLOR + (arg[i] - 90)), Color_fg);
++            scr_hicolor_mode (0, RS_hicolorFg);
+             break;
+           case 100:
+           case 101:		/* set bright bg color */
+@@ -4019,10 +4027,13 @@ rxvt_term::process_sgr_mode (unsigned int nargs, const int *arg)
+           case 106:
+           case 107:
+             scr_color ((unsigned int) (minBrightCOLOR + (arg[i] - 100)), Color_bg);
++            scr_hicolor_mode (0, RS_hicolorBg);
+             break;
+ #endif
+         }
++
+     }
++
+ }
+ 
+ void
+--- src/rxvt.h
++++ src/rxvt.h
+@@ -429,11 +429,17 @@ enum {
+ 
+ #define RS_Sel                  (1UL << 22)
+ 
+-// 4 custom bits for extensions
+-#define RS_customCount          16UL
++// 2 custom bits for extensions
++#define RS_customCount          4UL
+ #define RS_customShift          23
+ #define RS_customMask           ((RS_customCount - 1UL) << RS_customShift)
+ 
++// hi color fg/bg
++#define RS_hicolorShift         25
++#define RS_hicolorFg            (1UL << RS_hicolorShift)
++#define RS_hicolorBg            (2UL << RS_hicolorShift)
++#define RS_hicolorMask          (RS_hicolorFg | RS_hicolorBg)
++
+ // font styles
+ #define RS_Bold                 (1UL << RS_styleShift)
+ #define RS_Italic		(2UL << RS_styleShift)
+@@ -1444,7 +1450,7 @@ struct rxvt_term : zero_initialized, rxvt_vars, rxvt_screen
+   {
+     int base = GET_BASEFG (r);
+ #ifndef NO_BRIGHTCOLOR
+-    if (r & RS_Bold
++    if (r & RS_Bold && !(r & RS_hicolorFg)
+ # if ENABLE_STYLES
+         && option (Opt_intensityStyles)
+ # endif
+@@ -1458,7 +1464,7 @@ struct rxvt_term : zero_initialized, rxvt_vars, rxvt_screen
+   {
+     int base = GET_BASEBG (r);
+ #ifndef NO_BRIGHTCOLOR
+-    if (r & RS_Blink
++    if (r & RS_Blink && !(r & RS_hicolorBg)
+ # if ENABLE_STYLES
+         && option (Opt_intensityStyles)
+ # endif
+@@ -1505,6 +1511,7 @@ struct rxvt_term : zero_initialized, rxvt_vars, rxvt_screen
+   void scr_change_screen (int scrn);
+   void scr_color (unsigned int color, int fgbg) NOTHROW;
+   void scr_rendition (int set, int style) NOTHROW;
++  void scr_hicolor_mode (int set, int mode) NOTHROW;
+   void scr_add_lines (const wchar_t *str, int len, int minlines = 0) NOTHROW;
+   void scr_backspace () NOTHROW;
+   void scr_tab (int count, bool ht = false) NOTHROW;
+--- src/screen.C
++++ src/screen.C
+@@ -643,7 +643,20 @@ rxvt_term::scr_rendition (int set, int style) NOTHROW
+ 
+ /* ------------------------------------------------------------------------- */
+ /*
+- * Scroll text between <row1> and <row2> inclusive, by <count> lines
++ * Sets hi color mode for foreground or background color
++ */
++void
++rxvt_term::scr_hicolor_mode (int set, int mode) NOTHROW
++{
++  if (set)
++    rstyle |= (mode & RS_hicolorMask);
++  else
++    rstyle &= ~(mode & RS_hicolorMask);
++}
++
++/* ------------------------------------------------------------------------- */
++/*
++ * Scroll text between <row1> and <row2> inc:lusive, by <count> lines
+  * count positive ==> scroll up
+  * count negative ==> scroll down
+  */

@@ -21,6 +21,8 @@ source=(
   'clear.patch'
   'secondary-wheel.patch'
   'easy-clipboard.patch'
+  'terminfo.patch'
+  'intensity.patch'
 )
 
 sha512sums=('b39f1b2cbe6dd3fbd2a0ad6a9d391a2b6f49d7c5e67bc65fe44a9c86937f8db379572c67564c6e21ff6e09b447cdfd4e540544e486179e94da0e0db679c04dd9'
@@ -29,7 +31,9 @@ sha512sums=('b39f1b2cbe6dd3fbd2a0ad6a9d391a2b6f49d7c5e67bc65fe44a9c86937f8db3795
             'e21d29cd6b68641df2a4f56f61dd3aaf010fa4eb3016e6962ba00e093193381506a0d9eb275f20e968ab3b36583a18822e90c233f006fd01922501194d9714d6'
             '0d089f05ef91bbb976461f504577e50d8488ce8ed2c1faf108ce4b35b8349f1a9b352b285eb8690a6a4db40154287ef8fba6fd86bfc697c783dc99729bea16a4'
             '5ac064749a778e1bce2e1be500fcec0e4f044ba566cb9f4b4abcd3cba49b7d6f2ca96aad7253cca68d6091cb6fe031c515f3958e7c7fdfc9b51eb3525f4345e1'
-            '96a4d6b86592038a69d11cfa48a89db98d29404195641630aeee8b95b68fdbd17589e1fc88f0e34ef1c09af855fa1cd0184107a5335cd3909724c685dcd22c0a')
+            '96a4d6b86592038a69d11cfa48a89db98d29404195641630aeee8b95b68fdbd17589e1fc88f0e34ef1c09af855fa1cd0184107a5335cd3909724c685dcd22c0a'
+            '4e54e8d35293c14bce8834164ce9be7eaa150ee672304db85ab058099473cbeea2231b1ad613735e274a6dff48eb4165caffa9c1a1b0ca4200492c01ba26fd81'
+            '214a647886e69662e1228f9e0b31834f2e2d37fa14226406fa235a0c3dcad1a8ceae5b3ce52c5826706c96e3d705c3c3c89b6bc5de24d9f95403e0aeeb0496d3')
 
 prepare() {
   cd $pkgname-$pkgver
@@ -45,6 +49,12 @@ prepare() {
 
   # Adds option for accessing CLIPBOARD via Shift+Ctrl instead of Meta+Ctrl
   patch -p0 -i "$srcdir/easy-clipboard.patch"
+
+  # Improves terminfo setaf/setab
+  patch -p0 -i "$srcdir/terminfo.patch"
+
+  # Truecolor sequences should not trigger high intensity colors 
+  patch -p0 -i "$srcdir/intensity.patch"
 }
 
 build() {
@@ -72,7 +82,7 @@ build() {
     --disable-unicode3 \
     --disable-utmp \
     --disable-wtmp \
-    --enable-xft \
+    --disable-xft \
     --enable-xim \
     --disable-xterm-scroll \
     --disable-pixbuf \

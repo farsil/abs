@@ -1,0 +1,13 @@
+--- doc/etc/rxvt-unicode.terminfo
++++ doc/etc/rxvt-unicode.terminfo
+@@ -168,8 +168,8 @@ rxvt-unicode|rxvt-unicode terminal (X Window System),
+	rin=\E[%p1%dT,
+	sgr=\E[%?%p6%t;1%;%?%p2%t;4%;%?%p1%p3%|%t;7%;%?%p4%t;5%;%?%p7%t;8%;m%?%p9%t\E(0%e\E(B%;,
+	op=\E[39;49m,
+-	setaf=\E[38;5;%p1%dm,
+-	setab=\E[48;5;%p1%dm,
++	setaf=\E[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m,
++	setab=\E[%?%p1%{8}%<%t4%p1%d%e%p1%{16}%<%t10%p1%{8}%-%d%e48;5;%p1%d%;m,
+	setf=%?%p1%{7}%>%t\E[38;5;%p1%dm%e\E[3%?%p1%{1}%=%t4%e%p1%{3}%=%t6%e%p1%{4}%=%t1%e%p1%{6}%=%t3%e%p1%d%;m%;,
+	setb=%?%p1%{7}%>%t\E[48;5;%p1%dm%e\E[4%?%p1%{1}%=%t4%e%p1%{3}%=%t6%e%p1%{4}%=%t1%e%p1%{6}%=%t3%e%p1%d%;m%;,
+	initc=\E]4;%p1%d;rgb\:%p2%{65535}%*%{1000}%/%4.4X/%p3%{65535}%*%{1000}%/%4.4X/%p4%{65535}%*%{1000}%/%4.4X\E\\,
