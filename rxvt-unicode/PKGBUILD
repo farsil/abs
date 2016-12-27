@@ -82,7 +82,7 @@ build() {
     --disable-unicode3 \
     --disable-utmp \
     --disable-wtmp \
-    --disable-xft \
+    --enable-xft \
     --enable-xim \
     --disable-xterm-scroll \
     --disable-pixbuf \
